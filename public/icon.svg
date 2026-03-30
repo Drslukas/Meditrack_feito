@@ -1,0 +1,20 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- fundo -->
+  <rect x="56" y="56" width="400" height="400" rx="90" fill="#f2f2f2"></rect>
+
+  <!-- cápsula -->
+  <g transform="rotate(-45 256 256)">
+    
+    <!-- parte esquerda -->
+    <rect x="150" y="230" width="120" height="70" rx="35" fill="#2f7d53"></rect>
+    
+    <!-- parte direita -->
+    <rect x="270" y="230" width="120" height="70" rx="35" fill="#66c39a"></rect>
+    
+    <!-- divisão -->
+    <rect x="260" y="230" width="10" height="70" fill="#f2f2f2"></rect>
+
+  </g>
+
+</svg>
