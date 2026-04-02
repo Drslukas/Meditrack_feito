@@ -19,11 +19,9 @@ export interface MedicationLog {
 export interface Patient {
   id: string
   name: string
-  email: string
-  phone: string
-  age: number
   cpf: string
-  password: string
+  birthDate: string
+  phone?: string
   avatar?: string
   medications: Medication[]
   logs: MedicationLog[]
@@ -33,6 +31,7 @@ export interface Doctor {
   id: string
   name: string
   email: string
+  password: string
   crm: string
   specialty: string
   patients: string[] // patient IDs
@@ -204,55 +203,45 @@ export const patients: Patient[] = [
   {
     id: "p-1",
     name: "Carla Mendes",
-    email: "carla.mendes@email.com",
-    phone: "(11) 98765-4321",
-    age: 62,
     cpf: "123.456.789-01",
-    password: "senha123",
+    birthDate: "1961-10-12", // YYYY-MM-DD
+    phone: "(11) 98765-4321", // opcional
     medications: medicationsCarla,
     logs: generateLogs(medicationsCarla, 180),
   },
   {
     id: "p-2",
     name: "Joao Silva",
-    email: "joao.silva@email.com",
-    phone: "(11) 91234-5678",
-    age: 45,
     cpf: "234.567.890-12",
-    password: "senha123",
+    birthDate: "1978-05-15",
+    phone: "(11) 91234-5678",
     medications: medicationsJoao,
     logs: generateLogs(medicationsJoao, 180),
   },
   {
     id: "p-3",
     name: "Maria Oliveira",
-    email: "maria.oliveira@email.com",
-    phone: "(21) 99876-5432",
-    age: 55,
     cpf: "345.678.901-23",
-    password: "senha123",
+    birthDate: "1968-08-20",
+    phone: "(21) 99876-5432",
     medications: medicationsMaria,
     logs: generateLogs(medicationsMaria, 180),
   },
   {
     id: "p-4",
     name: "Ana Costa",
-    email: "ana.costa@email.com",
-    phone: "(31) 98765-1234",
-    age: 70,
     cpf: "456.789.012-34",
-    password: "senha123",
+    birthDate: "1955-03-10",
+    phone: "(31) 98765-1234",
     medications: medicationsAna,
     logs: generateLogs(medicationsAna, 180),
   },
   {
     id: "p-5",
     name: "Carlos Ferreira",
-    email: "carlos.ferreira@email.com",
     phone: "(41) 91234-8765",
-    age: 68,
     cpf: "567.890.123-45",
-    password: "senha123",
+    birthDate: "1955-03-10",
     medications: medicationsCarlos,
     logs: generateLogs(medicationsCarlos, 180),
   },
@@ -263,6 +252,7 @@ export const doctors: Doctor[] = [
     id: "d-1",
     name: "Dr. Ricardo Santos",
     email: "ricardo.santos@clinica.com",
+    password: "senha123",
     crm: "CRM/SP 123456",
     specialty: "Cardiologia",
     patients: ["p-1", "p-2", "p-3", "p-4", "p-5"],
