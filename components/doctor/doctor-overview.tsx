@@ -1,6 +1,5 @@
 "use client"
 
-import { useMemo } from "react"
 import {
   Users,
   TrendingUp,
@@ -12,11 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import {
-  type Doctor,
-  type Patient,
-  getOverallAdherence,
-} from "@/lib/mock-data"
+import { useAuth } from "@/lib/auth-context"
 import {
   BarChart,
   Bar,
@@ -26,35 +21,31 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
+import type { Patient } from "./doctor-dashboard"
+
+interface DashboardOverview {
+  total_patients: number
+  general_adherence: number
+  high_adherence_percentage: number
+  low_adherence_percentage: number
+  patients: Patient[]
+}
 
 interface DoctorOverviewProps {
-  doctor: Doctor
-  patients: Patient[]
+  overview: DashboardOverview
   onSelectPatient: (patient: Patient) => void
 }
 
-export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOverviewProps) {
-  const patientStats = useMemo(
-    () =>
-      patients.map((p) => ({
-        patient: p,
-        adherence: getOverallAdherence(p.logs),
-      })),
-    [patients]
-  )
+export function DoctorOverview({ overview, onSelectPatient }: DoctorOverviewProps) {
+  const { user } = useAuth()
 
-  const averageAdherence = useMemo(() => {
-    const sum = patientStats.reduce((acc, ps) => acc + ps.adherence, 0)
-    return patientStats.length > 0 ? Math.round(sum / patientStats.length) : 0
-  }, [patientStats])
-
-  const lowAdherenceCount = patientStats.filter((ps) => ps.adherence < 70).length
-  const highAdherenceCount = patientStats.filter((ps) => ps.adherence >= 90).length
-
-  const chartData = patientStats.map((ps) => ({
-    name: ps.patient.name.split(" ")[0],
-    adesao: ps.adherence,
+  const chartData = overview.patients.map((p) => ({
+    name: p.name.split(" ")[0],
+    adesao: p.adherence,
   }))
+
+  const lowAdherenceCount = overview.patients.filter((p) => p.adherence < 70).length
+  const highAdherenceCount = overview.patients.filter((p) => p.adherence >= 90).length
 
   function getAdherenceColor(adherence: number) {
     if (adherence >= 90) return "text-success"
@@ -72,10 +63,10 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight">
-          Ola, {doctor.name}!
+          Olá, {user?.name}!
         </h1>
         <p className="text-muted-foreground mt-1">
-          {doctor.specialty} - {doctor.crm}
+          Acompanhe a adesão dos seus pacientes
         </p>
       </div>
 
@@ -88,7 +79,7 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
                 <Users className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{patients.length}</p>
+                <p className="text-2xl font-bold text-foreground">{overview.total_patients}</p>
                 <p className="text-xs text-muted-foreground">Pacientes</p>
               </div>
             </div>
@@ -102,8 +93,8 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
                 <TrendingUp className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{averageAdherence}%</p>
-                <p className="text-xs text-muted-foreground">Adesao media</p>
+                <p className="text-2xl font-bold text-foreground">{overview.general_adherence}%</p>
+                <p className="text-xs text-muted-foreground">Adesão média</p>
               </div>
             </div>
           </CardContent>
@@ -117,7 +108,7 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{lowAdherenceCount}</p>
-                <p className="text-xs text-muted-foreground">Baixa adesao</p>
+                <p className="text-xs text-muted-foreground">Baixa adesão</p>
               </div>
             </div>
           </CardContent>
@@ -131,7 +122,7 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{highAdherenceCount}</p>
-                <p className="text-xs text-muted-foreground">Alta adesao</p>
+                <p className="text-xs text-muted-foreground">Alta adesão</p>
               </div>
             </div>
           </CardContent>
@@ -141,7 +132,7 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
       {/* Chart */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base text-foreground">Adesao por Paciente</CardTitle>
+          <CardTitle className="text-base text-foreground">Adesão por Paciente</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-52">
@@ -151,7 +142,7 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
                 <Tooltip
-                  formatter={(value: number) => [`${value}%`, "Adesao"]}
+                  formatter={(value: number) => [`${value}%`, "Adesão"]}
                   contentStyle={{
                     backgroundColor: "var(--card)",
                     border: "1px solid var(--border)",
@@ -180,15 +171,15 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
                   <th className="text-left py-3 px-2 text-muted-foreground font-medium">Paciente</th>
                   <th className="text-left py-3 px-2 text-muted-foreground font-medium">Idade</th>
                   <th className="text-left py-3 px-2 text-muted-foreground font-medium">Medicamentos</th>
-                  <th className="text-left py-3 px-2 text-muted-foreground font-medium">Adesao</th>
-                  <th className="text-right py-3 px-2 text-muted-foreground font-medium">Acao</th>
+                  <th className="text-left py-3 px-2 text-muted-foreground font-medium">Adesão</th>
+                  <th className="text-right py-3 px-2 text-muted-foreground font-medium">Ação</th>
                 </tr>
               </thead>
               <tbody>
-                {patientStats
+                {overview.patients
                   .sort((a, b) => a.adherence - b.adherence)
-                  .map(({ patient, adherence }) => (
-                    <tr key={patient.id} className="border-b border-border/50 last:border-0">
+                  .map((patient) => (
+                    <tr key={patient.patient_id} className="border-b border-border/50 last:border-0">
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary text-xs font-medium">
@@ -197,16 +188,18 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
                           <span className="font-medium text-foreground">{patient.name}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-2 text-muted-foreground">{patient.age} anos</td>
-                      <td className="py-3 px-2 text-muted-foreground">{patient.medications.length}</td>
+                      <td className="py-3 px-2 text-muted-foreground">
+                        {patient.age ? `${patient.age} anos` : "—"}
+                      </td>
+                      <td className="py-3 px-2 text-muted-foreground">{patient.active_medications}</td>
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-2">
                           <Progress
-                            value={adherence}
-                            className={`h-2 w-20 ${getAdherenceBg(adherence)}`}
+                            value={patient.adherence}
+                            className={`h-2 w-20 ${getAdherenceBg(patient.adherence)}`}
                           />
-                          <span className={`text-sm font-medium ${getAdherenceColor(adherence)}`}>
-                            {adherence}%
+                          <span className={`text-sm font-medium ${getAdherenceColor(patient.adherence)}`}>
+                            {patient.adherence}%
                           </span>
                         </div>
                       </td>
@@ -229,11 +222,11 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
 
           {/* Mobile cards */}
           <div className="md:hidden flex flex-col gap-3">
-            {patientStats
+            {overview.patients
               .sort((a, b) => a.adherence - b.adherence)
-              .map(({ patient, adherence }) => (
+              .map((patient) => (
                 <div
-                  key={patient.id}
+                  key={patient.patient_id}
                   className="flex items-center justify-between p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => onSelectPatient(patient)}
                 >
@@ -243,20 +236,21 @@ export function DoctorOverview({ doctor, patients, onSelectPatient }: DoctorOver
                     </div>
                     <div>
                       <p className="font-medium text-foreground text-sm">{patient.name}</p>
-                      <p className="text-xs text-muted-foreground">{patient.age} anos - {patient.medications.length} meds</p>
+                      <p className="text-xs text-muted-foreground">
+                        {patient.age ? `${patient.age} anos - ` : ""}{patient.active_medications} meds
+                      </p>
                     </div>
                   </div>
                   <Badge
-                    className={`${
-                      adherence >= 90
+                    className={`${patient.adherence >= 90
                         ? "bg-success/10 text-success border-success/20"
-                        : adherence >= 70
+                        : patient.adherence >= 70
                           ? "bg-warning/10 text-warning border-warning/20"
                           : "bg-destructive/10 text-destructive border-destructive/20"
-                    }`}
+                      }`}
                     variant="outline"
                   >
-                    {adherence}%
+                    {patient.adherence}%
                   </Badge>
                 </div>
               ))}

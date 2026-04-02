@@ -13,14 +13,23 @@ export function DoctorAuthForm({ onBack }: { onBack: () => void }) {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [name, setName] = useState("")
-  const [crm, setCrm] = useState("")
-  const [specialty, setSpecialty] = useState("")
+  const [error, setError] = useState<string | null>(null)
+
   const { loginAsDoctor } = useAuth()
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    loginAsDoctor(email, password)
+    setError(null)
+
+    try {
+      const success = await loginAsDoctor(email, password)
+      if (!success) {
+        setError("Email ou senha incorretos")
+      }
+    } catch (err) {
+      console.error(err)
+      setError("Ocorreu um erro ao tentar fazer login")
+    }
   }
 
   return (
@@ -41,7 +50,7 @@ export function DoctorAuthForm({ onBack }: { onBack: () => void }) {
               <Stethoscope className="w-6 h-6 text-primary-foreground" />
             </div>
             <CardTitle className="text-2xl text-foreground">
-              {mode === "login" ? "Entrar como Medico" : "Cadastro de Medico"}
+              {mode === "login" ? "Entrar como Médico" : "Cadastro de Médico"}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               {mode === "login"
@@ -49,40 +58,9 @@ export function DoctorAuthForm({ onBack }: { onBack: () => void }) {
                 : "Crie sua conta profissional"}
             </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {mode === "register" && (
-                <>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="doc-name" className="text-foreground">Nome completo</Label>
-                    <Input
-                      id="doc-name"
-                      placeholder="Dr(a). Nome"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="crm" className="text-foreground">CRM</Label>
-                    <Input
-                      id="crm"
-                      placeholder="CRM/UF 000000"
-                      value={crm}
-                      onChange={(e) => setCrm(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="specialty" className="text-foreground">Especialidade</Label>
-                    <Input
-                      id="specialty"
-                      placeholder="Ex: Cardiologia"
-                      value={specialty}
-                      onChange={(e) => setSpecialty(e.target.value)}
-                    />
-                  </div>
-                </>
-              )}
-
               <div className="flex flex-col gap-2">
                 <Label htmlFor="doc-email" className="text-foreground">E-mail profissional</Label>
                 <Input
@@ -91,6 +69,7 @@ export function DoctorAuthForm({ onBack }: { onBack: () => void }) {
                   placeholder="seu@clinica.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
 
@@ -103,6 +82,7 @@ export function DoctorAuthForm({ onBack }: { onBack: () => void }) {
                     placeholder="Sua senha"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
                   />
                   <button
                     type="button"
@@ -115,38 +95,23 @@ export function DoctorAuthForm({ onBack }: { onBack: () => void }) {
                 </div>
               </div>
 
+              {error && (
+                <p className="text-red-500 text-sm text-center">{error}</p>
+              )}
+
               <Button type="submit" className="w-full mt-2 bg-primary text-primary-foreground hover:bg-primary/90">
-                {mode === "login" ? "Entrar" : "Criar conta"}
+                Entrar
               </Button>
 
               <p className="text-sm text-center text-muted-foreground mt-2">
-                {mode === "login" ? (
-                  <>
-                    {"Nao tem conta? "}
-                    <button
-                      type="button"
-                      className="text-primary hover:underline font-medium"
-                      onClick={() => setMode("register")}
-                    >
-                      Cadastre-se
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {"Ja tem conta? "}
-                    <button
-                      type="button"
-                      className="text-primary hover:underline font-medium"
-                      onClick={() => setMode("login")}
-                    >
-                      Fazer login
-                    </button>
-                  </>
-                )}
-              </p>
-
-              <p className="text-xs text-center text-muted-foreground/70 mt-1">
-                Demo: use qualquer e-mail e senha para entrar
+                Não tem conta?{" "}
+                <button
+                  type="button"
+                  className="text-primary hover:underline font-medium"
+                  onClick={() => setMode("register")}
+                >
+                  Cadastre-se
+                </button>
               </p>
             </form>
           </CardContent>

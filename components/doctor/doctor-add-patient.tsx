@@ -6,33 +6,51 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuth } from "@/lib/auth-context"
-import { type Doctor } from "@/lib/mock-data"
+import { toast } from "sonner"
 
 interface DoctorAddPatientProps {
-  doctor: Doctor
   onBack: () => void
   onPatientAdded: () => void
 }
 
-export function DoctorAddPatient({ doctor, onBack, onPatientAdded }: DoctorAddPatientProps) {
+export function DoctorAddPatient({ onBack, onPatientAdded }: DoctorAddPatientProps) {
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [birthDate, setBirthDate] = useState("")
-  const [age, setAge] = useState("")
   const [cpf, setCpf] = useState("")
-  const { addPatient } = useAuth()
+  const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const ageNum = parseInt(age)
-    if (isNaN(ageNum)) return
+    setLoading(true)
 
-    const success = addPatient(doctor.id, name, cpf, birthDate, phone)
-    if (success) {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register/patient`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          cpf,
+          birth_date: birthDate,
+          phone,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.detail || "Erro ao cadastrar paciente")
+        return
+      }
+
+      toast.success("Paciente cadastrado com sucesso!")
       onPatientAdded()
-    } else {
-      alert("CPF já cadastrado no sistema!")
+
+    } catch (err) {
+      console.error(err)
+      toast.error("Erro ao cadastrar paciente")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -74,13 +92,13 @@ export function DoctorAddPatient({ doctor, onBack, onPatientAdded }: DoctorAddPa
                   id="name"
                   placeholder="Nome do paciente"
                   value={name}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+                  onChange={(e) => setName(e.target.value)}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="age">Idade</Label>
+                <Label htmlFor="birthDate">Data de nascimento</Label>
                 <Input
                   id="birthDate"
                   type="date"
@@ -97,7 +115,7 @@ export function DoctorAddPatient({ doctor, onBack, onPatientAdded }: DoctorAddPa
                 id="phone"
                 placeholder="(11) 99999-9999"
                 value={phone}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(e.target.value)}
                 required
               />
             </div>
@@ -108,14 +126,14 @@ export function DoctorAddPatient({ doctor, onBack, onPatientAdded }: DoctorAddPa
                 id="cpf"
                 placeholder="123.456.789-01"
                 value={cpf}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCpf(e.target.value)}
+                onChange={(e) => setCpf(e.target.value)}
                 required
               />
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" className="flex-1">
-                Cadastrar Paciente
+              <Button type="submit" className="flex-1" disabled={loading}>
+                {loading ? "Cadastrando..." : "Cadastrar Paciente"}
               </Button>
               <Button type="button" variant="outline" onClick={onBack}>
                 Cancelar

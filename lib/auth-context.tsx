@@ -1,27 +1,26 @@
 "use client"
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
-import { patients, doctors, type Patient, type Doctor } from "./mock-data"
 
 type UserRole = "patient" | "doctor"
+
+interface User {
+  user_id: number
+  name: string
+  role: UserRole
+}
 
 interface AuthState {
   isAuthenticated: boolean
   role: UserRole | null
-  user: Patient | Doctor | null
+  user: User | null
+  token: string | null
 }
 
 interface AuthContextType extends AuthState {
-  loginAsPatient: (cpf: string, birthDate: string) => boolean
-  loginAsDoctor: (email: string, password: string) => boolean
+  loginAsPatient: (cpf: string, birthDate: string) => Promise<boolean>
+  loginAsDoctor: (email: string, password: string) => Promise<boolean>
   logout: () => void
-  addPatient: (
-    doctorId: string,
-    name: string,
-    cpf: string,
-    birthDate: string,
-    phone?: string
-  ) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -31,67 +30,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: false,
     role: null,
     user: null,
+    token: null,
   })
 
-  // Login paciente usando CPF + birthDate
-  const loginAsPatient = useCallback((cpf: string, birthDate: string) => {
-    const patient = patients.find(
-      p => p.cpf === cpf && p.birthDate === birthDate
-    )
-    if (patient) {
-      setState({ isAuthenticated: true, role: "patient", user: patient })
+  const loginAsPatient = useCallback(async (cpf: string, birthDate: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login/patient`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cpf, birth_date: birthDate }),
+      })
+
+      if (!res.ok) return false
+
+      const data = await res.json()
+      setState({
+        isAuthenticated: true,
+        role: data.role,
+        user: { user_id: data.user_id, name: data.name, role: data.role },
+        token: data.access_token,
+      })
+
       return true
+    } catch (err) {
+      console.error("Login paciente falhou:", err)
+      return false
     }
-    return false
   }, [])
 
-  // Login médico usando email
-  const loginAsDoctor = useCallback((email: string, password: string) => {
-    const doctor = doctors.find(
-      d => d.email.toLowerCase() === email.toLowerCase() && d.password === password
-    )
-    if (doctor) {
-      setState({ isAuthenticated: true, role: "doctor", user: doctor })
+  const loginAsDoctor = useCallback(async (email: string, password: string) => {
+    try {
+      console.log("Tentando login com:", { email, password }) // 👈 log do request
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login/doctor`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      console.log("Status da resposta:", res.status) // 👈 ver se é 200
+
+      const data = await res.json()
+      console.log("Dados retornados:", data) // 👈 ver o corpo da resposta
+
+      if (!res.ok) return false
+
+      setState({
+        isAuthenticated: true,
+        role: data.role,
+        user: { user_id: data.user_id, name: data.name, role: data.role },
+        token: data.access_token,
+      })
+
       return true
+    } catch (err) {
+      console.error("Erro ao logar médico:", err)
+      return false
     }
-    return false
   }, [])
 
   const logout = useCallback(() => {
-    setState({ isAuthenticated: false, role: null, user: null })
+    setState({ isAuthenticated: false, role: null, user: null, token: null })
   }, [])
-
-  const addPatient = useCallback(
-    (doctorId: string, name: string, cpf: string, birthDate: string, phone?: string) => {
-      // Verifica se CPF já existe
-      const existingPatient = patients.find(p => p.cpf === cpf)
-      if (existingPatient) return false
-
-      const newPatient: Patient = {
-        id: `p-${patients.length + 1}`,
-        name,
-        cpf,
-        birthDate,
-        phone,
-        medications: [],
-        logs: [],
-      }
-
-      patients.push(newPatient)
-
-      const doctor = doctors.find(d => d.id === doctorId)
-      if (doctor) {
-        doctor.patients.push(newPatient.id)
-      }
-
-      return true
-    },
-    []
-  )
 
   return (
     <AuthContext.Provider
-      value={{ ...state, loginAsPatient, loginAsDoctor, logout, addPatient }}
+      value={{ ...state, loginAsPatient, loginAsDoctor, logout }}
     >
       {children}
     </AuthContext.Provider>
@@ -100,8 +104,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider")
   return context
 }

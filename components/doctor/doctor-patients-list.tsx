@@ -5,7 +5,6 @@ import { Search, Users, TrendingUp, TrendingDown, Minus, ChevronRight } from "lu
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -13,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { type Patient, calculatePatientAdherence } from "@/lib/mock-data"
+import type { Patient } from "./doctor-dashboard"
 
 interface DoctorPatientsListProps {
   patients: Patient[]
@@ -25,27 +24,18 @@ export function DoctorPatientsList({ patients, onSelectPatient }: DoctorPatients
   const [sortBy, setSortBy] = useState<"name" | "adherence" | "age">("name")
   const [filterAdherence, setFilterAdherence] = useState<"all" | "high" | "medium" | "low">("all")
 
-  const patientsWithAdherence = useMemo(() => {
-    return patients.map((p) => ({
-      ...p,
-      adherence: calculatePatientAdherence(p),
-    }))
-  }, [patients])
-
   const filteredPatients = useMemo(() => {
-    let result = [...patientsWithAdherence]
+    let result = [...patients]
 
-    // Filter by search
+    // Filtro por busca
     if (search) {
       const searchLower = search.toLowerCase()
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchLower) ||
-          p.email.toLowerCase().includes(searchLower)
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(searchLower)
       )
     }
 
-    // Filter by adherence level
+    // Filtro por nível de adesão
     if (filterAdherence !== "all") {
       result = result.filter((p) => {
         if (filterAdherence === "high") return p.adherence >= 80
@@ -54,15 +44,16 @@ export function DoctorPatientsList({ patients, onSelectPatient }: DoctorPatients
       })
     }
 
-    // Sort
+    // Ordenação
     result.sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name)
       if (sortBy === "adherence") return b.adherence - a.adherence
-      return b.age - a.age
+      if (sortBy === "age") return (b.age ?? 0) - (a.age ?? 0)
+      return 0
     })
 
     return result
-  }, [patientsWithAdherence, search, sortBy, filterAdherence])
+  }, [patients, search, sortBy, filterAdherence])
 
   function getAdherenceBadge(adherence: number) {
     if (adherence >= 80) {
@@ -123,9 +114,9 @@ export function DoctorPatientsList({ patients, onSelectPatient }: DoctorPatients
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">
-                  {patientsWithAdherence.filter((p) => p.adherence >= 80).length}
+                  {patients.filter((p) => p.adherence >= 80).length}
                 </p>
-                <p className="text-sm text-muted-foreground">Alta Adesao</p>
+                <p className="text-sm text-muted-foreground">Alta Adesão</p>
               </div>
             </div>
           </CardContent>
@@ -139,9 +130,9 @@ export function DoctorPatientsList({ patients, onSelectPatient }: DoctorPatients
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">
-                  {patientsWithAdherence.filter((p) => p.adherence < 50).length}
+                  {patients.filter((p) => p.adherence < 50).length}
                 </p>
-                <p className="text-sm text-muted-foreground">Necessitam Atencao</p>
+                <p className="text-sm text-muted-foreground">Necessitam Atenção</p>
               </div>
             </div>
           </CardContent>
@@ -158,7 +149,7 @@ export function DoctorPatientsList({ patients, onSelectPatient }: DoctorPatients
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nome ou email..."
+                placeholder="Buscar por nome..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -170,18 +161,18 @@ export function DoctorPatientsList({ patients, onSelectPatient }: DoctorPatients
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="name">Nome</SelectItem>
-                <SelectItem value="adherence">Adesao</SelectItem>
+                <SelectItem value="adherence">Adesão</SelectItem>
                 <SelectItem value="age">Idade</SelectItem>
               </SelectContent>
             </Select>
             <Select value={filterAdherence} onValueChange={(v) => setFilterAdherence(v as typeof filterAdherence)}>
               <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filtrar adesao" />
+                <SelectValue placeholder="Filtrar adesão" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="high">Alta (80%+)</SelectItem>
-                <SelectItem value="medium">Media (50-79%)</SelectItem>
+                <SelectItem value="medium">Média (50-79%)</SelectItem>
                 <SelectItem value="low">Baixa (&lt;50%)</SelectItem>
               </SelectContent>
             </Select>
@@ -205,7 +196,7 @@ export function DoctorPatientsList({ patients, onSelectPatient }: DoctorPatients
             <div className="divide-y divide-border">
               {filteredPatients.map((patient) => (
                 <button
-                  key={patient.id}
+                  key={patient.patient_id}
                   onClick={() => onSelectPatient(patient)}
                   className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors text-left"
                 >
@@ -214,9 +205,8 @@ export function DoctorPatientsList({ patients, onSelectPatient }: DoctorPatients
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground truncate">{patient.name}</p>
-                    <p className="text-sm text-muted-foreground truncate">{patient.email}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {patient.age} anos - {patient.medications.length} medicamento{patient.medications.length !== 1 ? "s" : ""}
+                      {patient.age ? `${patient.age} anos - ` : ""}{patient.active_medications} medicamento{patient.active_medications !== 1 ? "s" : ""}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
