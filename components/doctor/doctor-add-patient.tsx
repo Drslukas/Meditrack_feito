@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import { useAuth } from "@/lib/auth-context"
 
 interface DoctorAddPatientProps {
   onBack: () => void
@@ -18,6 +19,7 @@ export function DoctorAddPatient({ onBack, onPatientAdded }: DoctorAddPatientPro
   const [phone, setPhone] = useState("")
   const [birthDate, setBirthDate] = useState("")
   const [cpf, setCpf] = useState("")
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -33,6 +35,7 @@ export function DoctorAddPatient({ onBack, onPatientAdded }: DoctorAddPatientPro
           cpf,
           birth_date: birthDate,
           phone,
+          doctor_id: user?.user_id,
         }),
       })
 
