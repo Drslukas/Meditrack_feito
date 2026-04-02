@@ -1,12 +1,6 @@
 "use client"
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  type ReactNode,
-} from "react"
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
 import { patients, doctors, type Patient, type Doctor } from "./mock-data"
 
 type UserRole = "patient" | "doctor"
@@ -18,10 +12,16 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  loginAsPatient: (email: string, password: string) => boolean
-  loginAsDoctor: (email: string) => boolean
+  loginAsPatient: (cpf: string, birthDate: string) => boolean
+  loginAsDoctor: (email: string, password: string) => boolean
   logout: () => void
-  addPatient: (doctorId: string, name: string, email: string, phone: string, age: number, cpf: string, password: string) => boolean
+  addPatient: (
+    doctorId: string,
+    name: string,
+    cpf: string,
+    birthDate: string,
+    phone?: string
+  ) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -33,9 +33,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user: null,
   })
 
-  const loginAsPatient = useCallback((email: string, password: string) => {
+  // Login paciente usando CPF + birthDate
+  const loginAsPatient = useCallback((cpf: string, birthDate: string) => {
     const patient = patients.find(
-      (p) => p.email.toLowerCase() === email.toLowerCase() && p.password === password
+      p => p.cpf === cpf && p.birthDate === birthDate
     )
     if (patient) {
       setState({ isAuthenticated: true, role: "patient", user: patient })
@@ -44,16 +45,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false
   }, [])
 
-  const loginAsDoctor = useCallback((email: string) => {
+  // Login médico usando email
+  const loginAsDoctor = useCallback((email: string, password: string) => {
     const doctor = doctors.find(
-      (d) => d.email.toLowerCase() === email.toLowerCase()
+      d => d.email.toLowerCase() === email.toLowerCase() && d.password === password
     )
     if (doctor) {
       setState({ isAuthenticated: true, role: "doctor", user: doctor })
       return true
     }
-    setState({ isAuthenticated: true, role: "doctor", user: doctors[0] })
-    return true
+    return false
   }, [])
 
   const logout = useCallback(() => {
@@ -61,31 +62,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addPatient = useCallback(
-    (doctorId: string, name: string, email: string, phone: string, age: number, cpf: string, password: string) => {
-      // Verificar se CPF já existe
+    (doctorId: string, name: string, cpf: string, birthDate: string, phone?: string) => {
+      // Verifica se CPF já existe
       const existingPatient = patients.find(p => p.cpf === cpf)
-      if (existingPatient) {
-        return false // CPF já cadastrado
-      }
+      if (existingPatient) return false
 
       const newPatient: Patient = {
         id: `p-${patients.length + 1}`,
         name,
-        email,
-        phone,
-        age,
         cpf,
-        password,
+        birthDate,
+        phone,
         medications: [],
         logs: [],
       }
+
       patients.push(newPatient)
-      
+
       const doctor = doctors.find(d => d.id === doctorId)
       if (doctor) {
         doctor.patients.push(newPatient.id)
       }
-      
+
       return true
     },
     []

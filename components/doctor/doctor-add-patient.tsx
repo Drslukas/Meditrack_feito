@@ -17,11 +17,10 @@ interface DoctorAddPatientProps {
 
 export function DoctorAddPatient({ doctor, onBack, onPatientAdded }: DoctorAddPatientProps) {
   const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
+  const [birthDate, setBirthDate] = useState("")
   const [age, setAge] = useState("")
   const [cpf, setCpf] = useState("")
-  const [password, setPassword] = useState("")
   const { addPatient } = useAuth()
 
   function handleSubmit(e: React.FormEvent) {
@@ -29,7 +28,7 @@ export function DoctorAddPatient({ doctor, onBack, onPatientAdded }: DoctorAddPa
     const ageNum = parseInt(age)
     if (isNaN(ageNum)) return
 
-    const success = addPatient(doctor.id, name, email, phone, ageNum, cpf, password)
+    const success = addPatient(doctor.id, name, cpf, birthDate, phone)
     if (success) {
       onPatientAdded()
     } else {
@@ -83,26 +82,13 @@ export function DoctorAddPatient({ doctor, onBack, onPatientAdded }: DoctorAddPa
               <div className="space-y-2">
                 <Label htmlFor="age">Idade</Label>
                 <Input
-                  id="age"
-                  type="number"
-                  placeholder="Idade"
-                  value={age}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAge(e.target.value)}
+                  id="birthDate"
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
                   required
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="paciente@email.com"
-                value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                required
-              />
             </div>
 
             <div className="space-y-2">
@@ -123,18 +109,6 @@ export function DoctorAddPatient({ doctor, onBack, onPatientAdded }: DoctorAddPa
                 placeholder="123.456.789-01"
                 value={cpf}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCpf(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha inicial</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Senha para acesso do paciente"
-                value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                 required
               />
             </div>

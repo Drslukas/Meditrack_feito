@@ -20,7 +20,7 @@ export function DoctorAuthForm({ onBack }: { onBack: () => void }) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    loginAsDoctor(email)
+    loginAsDoctor(email, password)
   }
 
   return (
