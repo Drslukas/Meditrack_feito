@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Eye, EyeOff, Pill } from "lucide-react"
+import { ArrowLeft, Pill } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,19 +9,28 @@ import { Label } from "@/components/ui/label"
 import { useAuth } from "@/lib/auth-context"
 
 export function PatientAuthForm({ onBack }: { onBack: () => void }) {
-  const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [cpf, setCpf] = useState("")
+  const [birthDate, setBirthDate] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
   const { loginAsPatient } = useAuth()
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    // Simulação de login - apenas navega para o dashboard
-    // Como estamos focando apenas no front-end, usamos credenciais fixas
-    const success = loginAsPatient("demo@email.com", "demo")
-    if (!success) {
-      // Fallback: força login com primeiro paciente para demo
-      loginAsPatient("carla.mendes@email.com", "senha123")
+    setError(null)
+    setLoading(true)
+
+    try {
+      const success = await loginAsPatient(cpf, birthDate)
+      if (!success) {
+        setError("CPF ou data de nascimento incorretos")
+      }
+    } catch (err) {
+      console.error(err)
+      setError("Ocorreu um erro ao tentar fazer login")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -52,43 +61,42 @@ export function PatientAuthForm({ onBack }: { onBack: () => void }) {
           <CardContent>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="email" className="text-foreground">E-mail</Label>
+                <Label htmlFor="cpf" className="text-foreground">CPF</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="cpf"
+                  type="text"
+                  placeholder="123.456.789-00"
+                  value={cpf}
+                  onChange={(e) => setCpf(e.target.value)}
+                  required
                 />
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="password" className="text-foreground">Senha</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Sua senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+                <Label htmlFor="birthDate" className="text-foreground">Data de nascimento</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  required
+                />
               </div>
 
-              <Button type="submit" className="w-full mt-2 bg-primary text-primary-foreground hover:bg-primary/90">
-                Entrar
+              {error && (
+                <p className="text-red-500 text-sm text-center">{error}</p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full mt-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                disabled={loading}
+              >
+                {loading ? "Entrando..." : "Entrar"}
               </Button>
 
               <p className="text-sm text-center text-muted-foreground mt-2">
-                Para se cadastrar, entre em contato com seu médico. A senha será definida pelo médico responsável.
+                Para se cadastrar, entre em contato com seu médico.
               </p>
             </form>
           </CardContent>
