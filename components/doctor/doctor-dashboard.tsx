@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import {
   Users,
@@ -9,6 +9,7 @@ import {
   Menu,
   X,
   UserPlus,
+  FilePlus,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
@@ -16,8 +17,9 @@ import { DoctorOverview } from "./doctor-overview"
 import { DoctorPatientDetail } from "./doctor-patient-detail"
 import { DoctorPatientsList } from "./doctor-patients-list"
 import { DoctorAddPatient } from "./doctor-add-patient"
+import { DoctorNewPrescription } from "./doctor-new-prescription"
 
-type View = "overview" | "patients" | "patient-detail" | "add-patient"
+type View = "overview" | "patients" | "patient-detail" | "add-patient" | "new-prescription"
 
 export interface Patient {
   patient_id: number
@@ -25,6 +27,14 @@ export interface Patient {
   age: number | null
   active_medications: number
   adherence: number
+}
+
+export interface PatientSimple {
+  id: number
+  name: string
+  cpf: string
+  birth_date: string
+  phone: string
 }
 
 interface DashboardOverview {
@@ -42,31 +52,42 @@ export function DoctorDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [overview, setOverview] = useState<DashboardOverview | null>(null)
   const [loading, setLoading] = useState(true)
+  const [allPatients, setAllPatients] = useState<PatientSimple[]>([])
 
-  useEffect(() => {
-    async function fetchOverview() {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/overview/${user?.user_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-        const data = await res.json()
-        setOverview(data)
-      } catch (err) {
-        console.error("Erro ao buscar overview:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (user?.user_id) {
-      fetchOverview()
+  const fetchOverview = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/overview/${user?.user_id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      const data = await res.json()
+      setOverview(data)
+    } catch (err) {
+      console.error("Erro ao buscar overview:", err)
+    } finally {
+      setLoading(false)
     }
   }, [user, token])
+
+  const fetchAllPatients = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/patients/doctor/${user?.user_id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      const data = await res.json()
+      setAllPatients(data)
+    } catch (err) {
+      console.error("Erro ao buscar pacientes:", err)
+    }
+  }, [user, token])
+
+  useEffect(() => {
+    if (user?.user_id) {
+      fetchOverview()
+      fetchAllPatients()
+    }
+  }, [user, token, fetchOverview, fetchAllPatients])
 
   function openPatient(patient: Patient) {
     setSelectedPatient(patient)
@@ -120,6 +141,16 @@ export function DoctorDashboard() {
           >
             <UserPlus className="w-4 h-4" />
             Cadastrar Paciente
+          </button>
+          <button
+            onClick={() => { setView("new-prescription"); setSelectedPatient(null) }}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${view === "new-prescription"
+                ? "bg-sidebar-accent text-sidebar-primary"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+              }`}
+          >
+            <FilePlus className="w-4 h-4" />
+            Nova Prescrição
           </button>
         </nav>
 
@@ -183,6 +214,13 @@ export function DoctorDashboard() {
               <UserPlus className="w-4 h-4" />
               Cadastrar Paciente
             </button>
+            <button
+              onClick={() => { setView("new-prescription"); setSelectedPatient(null); setMobileMenuOpen(false) }}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted"
+            >
+              <FilePlus className="w-4 h-4" />
+              Nova Prescrição
+            </button>
             <Button
               variant="ghost"
               className="justify-start gap-2 text-muted-foreground mt-2"
@@ -219,7 +257,21 @@ export function DoctorDashboard() {
           {view === "add-patient" && (
             <DoctorAddPatient
               onBack={() => setView("patients")}
-              onPatientAdded={() => setView("patients")}
+              onPatientAdded={() => {
+                fetchAllPatients()
+                setView("patients")
+              }}
+            />
+          )}
+          {view === "new-prescription" && (
+            <DoctorNewPrescription
+              patients={allPatients}
+              onBack={() => setView("overview")}
+              onPrescriptionCreated={() => {
+                fetchOverview()
+                fetchAllPatients()
+                setView("patients")
+              }}
             />
           )}
         </div>
