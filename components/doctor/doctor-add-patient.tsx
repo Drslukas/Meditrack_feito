@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
+import { PatternFormat } from "react-number-format"
 
 interface DoctorAddPatientProps {
   onBack: () => void
@@ -114,23 +115,23 @@ export function DoctorAddPatient({ onBack, onPatientAdded }: DoctorAddPatientPro
 
             <div className="space-y-2">
               <Label htmlFor="phone">Telefone (WhatsApp)</Label>
-              <Input
-                id="phone"
-                placeholder="(11) 99999-9999"
+              <PatternFormat
+                format="(##) #########"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
+                onValueChange={(values) => setPhone(values.value)}
+                placeholder="(00) 00000-0000"
+                className="w-full border rounded-lg px-3 py-2"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="cpf">CPF</Label>
-              <Input
-                id="cpf"
-                placeholder="123.456.789-01"
+              <PatternFormat
+                format="###.###.###-##"
                 value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
-                required
+                onValueChange={(values) => setCpf(values.value)}
+                placeholder="000.000.000-00"
+                className="w-full border rounded-lg px-3 py-2"
               />
             </div>
 
