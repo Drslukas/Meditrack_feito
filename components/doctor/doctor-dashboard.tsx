@@ -105,7 +105,7 @@ export function DoctorDashboard() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-sidebar-border">
+      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 flex-col bg-sidebar border-r border-sidebar-border">
         <div className="flex items-center gap-2 px-6 py-5 border-b border-sidebar-border">
           <Image src="/logo.png" alt="MediTrack" width={32} height={32} className="rounded-lg" />
           <span className="text-lg font-semibold text-sidebar-foreground tracking-tight">MediTrack</span>
@@ -234,7 +234,7 @@ export function DoctorDashboard() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 md:overflow-y-auto pt-16 md:pt-0">
+      <main className="flex-1 md:overflow-y-auto pt-16 md:pt-0 md:ml-64">
         <div className="p-6 md:p-8 max-w-6xl mx-auto">
           {view === "overview" && overview && (
             <DoctorOverview

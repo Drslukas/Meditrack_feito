@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react"
 
 type UserRole = "patient" | "doctor"
 
@@ -33,6 +33,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     token: null,
   })
 
+  // Recupera o token ao recarregar a página
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    const user = localStorage.getItem("user")
+
+    if (token && user) {
+      const parsedUser = JSON.parse(user)
+      setState({
+        isAuthenticated: true,
+        role: parsedUser.role,
+        user: parsedUser,
+        token,
+      })
+    }
+  }, [])
+
   const loginAsPatient = useCallback(async (cpf: string, birthDate: string) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login/patient`, {
@@ -44,10 +60,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!res.ok) return false
 
       const data = await res.json()
+      const user = { user_id: data.user_id, name: data.name, role: data.role }
+
+      localStorage.setItem("token", data.access_token)
+      localStorage.setItem("user", JSON.stringify(user))
+
       setState({
         isAuthenticated: true,
         role: data.role,
-        user: { user_id: data.user_id, name: data.name, role: data.role },
+        user,
         token: data.access_token,
       })
 
@@ -60,25 +81,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginAsDoctor = useCallback(async (email: string, password: string) => {
     try {
-      console.log("Tentando login com:", { email, password }) // 👈 log do request
-
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login/doctor`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       })
 
-      console.log("Status da resposta:", res.status) // 👈 ver se é 200
+      if (!res.ok) return false
 
       const data = await res.json()
-      console.log("Dados retornados:", data) // 👈 ver o corpo da resposta
+      const user = { user_id: data.user_id, name: data.name, role: data.role }
 
-      if (!res.ok) return false
+      localStorage.setItem("token", data.access_token)
+      localStorage.setItem("user", JSON.stringify(user))
 
       setState({
         isAuthenticated: true,
         role: data.role,
-        user: { user_id: data.user_id, name: data.name, role: data.role },
+        user,
         token: data.access_token,
       })
 
@@ -90,6 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
+    localStorage.removeItem("token")
+    localStorage.removeItem("user")
     setState({ isAuthenticated: false, role: null, user: null, token: null })
   }, [])
 
@@ -107,4 +129,3 @@ export function useAuth() {
   if (!context) throw new Error("useAuth must be used within an AuthProvider")
   return context
 }
-
