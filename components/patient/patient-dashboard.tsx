@@ -13,7 +13,6 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
-import type { Patient } from "@/lib/mock-data"
 import { PatientOverview } from "./patient-overview"
 import { PatientCalendar } from "./patient-calendar"
 import { PatientMedications } from "./patient-medications"
@@ -23,14 +22,13 @@ type Tab = "overview" | "calendar" | "medications" | "profile"
 
 const navItems: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Painel", icon: LayoutDashboard },
-  { id: "calendar", label: "Calendario", icon: CalendarDays },
+  { id: "calendar", label: "Calendário", icon: CalendarDays },
   { id: "medications", label: "Medicamentos", icon: Pill },
   { id: "profile", label: "Perfil", icon: User },
 ]
 
 export function PatientDashboard() {
   const { user, logout } = useAuth()
-  const patient = user as Patient
   const [activeTab, setActiveTab] = useState<Tab>("overview")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -51,11 +49,10 @@ export function PatientDashboard() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
                     ? "bg-sidebar-accent text-sidebar-primary"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                }`}
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 {item.label}
@@ -67,10 +64,10 @@ export function PatientDashboard() {
         <div className="px-3 py-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3 px-3 mb-3">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-sidebar-accent text-sidebar-foreground text-sm font-medium">
-              {patient.name.charAt(0)}
+              {user?.name.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">{patient.name}</p>
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.name}</p>
               <p className="text-xs text-sidebar-foreground/50">Paciente</p>
             </div>
           </div>
@@ -113,11 +110,10 @@ export function PatientDashboard() {
                     setActiveTab(item.id)
                     setMobileMenuOpen(false)
                   }}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted"
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   {item.label}
@@ -139,10 +135,10 @@ export function PatientDashboard() {
       {/* Main Content */}
       <main className="flex-1 md:overflow-y-auto pt-16 md:pt-0 md:ml-64">
         <div className="p-6 md:p-8 max-w-5xl mx-auto">
-          {activeTab === "overview" && <PatientOverview patient={patient} />}
-          {activeTab === "calendar" && <PatientCalendar patient={patient} />}
-          {activeTab === "medications" && <PatientMedications patient={patient} />}
-          {activeTab === "profile" && <PatientProfile patient={patient} />}
+          {activeTab === "overview" && <PatientOverview />}
+          {activeTab === "calendar" && <PatientCalendar />}
+          {activeTab === "medications" && <PatientMedications patientId={user?.user_id!} />}
+          {activeTab === "profile" && <PatientProfile userId={user?.user_id!} />}
         </div>
       </main>
     </div>

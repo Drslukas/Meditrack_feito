@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Clock, AlertTriangle, Pill } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/lib/auth-context"
 
 type Medication = {
   id: number
@@ -16,16 +17,15 @@ type Medication = {
 }
 
 export function PatientMedications({ patientId }: { patientId: number }) {
-
+  const { token } = useAuth()
   const [medications, setMedications] = useState<Medication[]>([])
 
   useEffect(() => {
     async function loadMedications() {
-
       const res = await fetch(
-        `http://localhost:8000/prescriptions/patient/${patientId}`
+        `${process.env.NEXT_PUBLIC_API_URL}/prescriptions/patient/${patientId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       )
-
       const data = await res.json()
 
       const mapped = data.map((med: any) => ({
@@ -34,7 +34,7 @@ export function PatientMedications({ patientId }: { patientId: number }) {
         dosage: med.dosage,
         times: med.schedules,
         timesPerDay: med.schedules.length,
-        fasting: false,
+        fasting: med.indication?.toLowerCase().includes("jejum") ?? false,
         instructions: med.notes
       }))
 
@@ -42,7 +42,7 @@ export function PatientMedications({ patientId }: { patientId: number }) {
     }
 
     loadMedications()
-  }, [patientId])
+  }, [patientId, token])
 
   // Agrupar por horário
   const timeGroups: Record<string, Medication[]> = {}
