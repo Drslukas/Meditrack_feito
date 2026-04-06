@@ -18,6 +18,7 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
+  loading: boolean
   loginAsPatient: (cpf: string, birthDate: string) => Promise<boolean>
   loginAsDoctor: (email: string, password: string) => Promise<boolean>
   logout: () => void
@@ -34,6 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   // Recupera o token ao recarregar a página
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
     const token = localStorage.getItem("token")
     const user = localStorage.getItem("user")
@@ -47,6 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
       })
     }
+
+    setLoading(false)
   }, [])
 
   const loginAsPatient = useCallback(async (cpf: string, birthDate: string) => {
@@ -117,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ ...state, loginAsPatient, loginAsDoctor, logout }}
+      value={{ ...state, loading, loginAsPatient, loginAsDoctor, logout }}
     >
       {children}
     </AuthContext.Provider>

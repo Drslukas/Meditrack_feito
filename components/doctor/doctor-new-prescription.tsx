@@ -199,9 +199,6 @@ export function DoctorNewPrescription({
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={onBack} className="text-muted-foreground hover:text-foreground">
-                    <ArrowLeft className="w-4 h-4" />
-                </Button>
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">Nova Prescrição</h1>
                     <p className="text-muted-foreground">Defina os medicamentos e horários do tratamento</p>
