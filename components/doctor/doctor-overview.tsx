@@ -38,6 +38,7 @@ interface DoctorOverviewProps {
 
 export function DoctorOverview({ overview, onSelectPatient }: DoctorOverviewProps) {
   const { user } = useAuth()
+  if (!overview || !overview.patients) return null
 
   const chartData = overview.patients.map((p) => ({
     name: p.name.split(" ")[0],

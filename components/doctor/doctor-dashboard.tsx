@@ -46,12 +46,12 @@ interface DashboardOverview {
 }
 
 export function DoctorDashboard() {
-  const { user, token, logout } = useAuth()
+  const { user, token, logout, loading: authLoading } = useAuth()
   const [view, setView] = useState<View>("overview")
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [overview, setOverview] = useState<DashboardOverview | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [allPatients, setAllPatients] = useState<PatientSimple[]>([])
 
   const fetchOverview = useCallback(async () => {
@@ -83,18 +83,19 @@ export function DoctorDashboard() {
   }, [user, token])
 
   useEffect(() => {
-    if (user?.user_id) {
+    if (!authLoading && user?.user_id && token) {
+      setLoading(true)
       fetchOverview()
       fetchAllPatients()
     }
-  }, [user, token, fetchOverview, fetchAllPatients])
+  }, [authLoading, user, token, fetchOverview, fetchAllPatients])
 
   function openPatient(patient: Patient) {
     setSelectedPatient(patient)
     setView("patient-detail")
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground">Carregando...</p>
