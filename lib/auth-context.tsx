@@ -33,25 +33,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user: null,
     token: null,
   })
-
-  // Recupera o token ao recarregar a página
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    const user = localStorage.getItem("user")
+    async function verifyToken() {
+      const token = localStorage.getItem("token")
+      const user = localStorage.getItem("user")
 
-    if (token && user) {
-      const parsedUser = JSON.parse(user)
-      setState({
-        isAuthenticated: true,
-        role: parsedUser.role,
-        user: parsedUser,
-        token,
-      })
+      if (!token || !user) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+
+        if (!res.ok) {
+          localStorage.removeItem("token")
+          localStorage.removeItem("user")
+          setLoading(false)
+          return
+        }
+
+        const parsedUser = JSON.parse(user)
+        setState({
+          isAuthenticated: true,
+          role: parsedUser.role,
+          user: parsedUser,
+          token,
+        })
+      } catch (err) {
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
+      } finally {
+        setLoading(false)
+      }
     }
 
-    setLoading(false)
+    verifyToken()
   }, [])
 
   const loginAsPatient = useCallback(async (cpf: string, birthDate: string) => {
