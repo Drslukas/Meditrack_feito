@@ -67,6 +67,8 @@ export function PatientAuthForm({ onBack }: { onBack: () => void }) {
                 <PatternFormat
                   format="###.###.###-##"
                   value={cpf}
+                  inputMode="numeric"
+                  type="tel"
                   onValueChange={(values) => setCpf(values.value)}
                   placeholder="000.000.000-00"
                   className="w-full border rounded-lg px-3 py-2"
@@ -79,6 +81,7 @@ export function PatientAuthForm({ onBack }: { onBack: () => void }) {
                   id="birthDate"
                   type="date"
                   value={birthDate}
+                  inputMode="numeric"
                   onChange={(e) => setBirthDate(e.target.value)}
                   required
                 />
