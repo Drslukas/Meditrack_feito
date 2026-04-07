@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/lib/auth-context"
+import { PatternFormat } from "react-number-format" 
 
 export function PatientAuthForm({ onBack }: { onBack: () => void }) {
   const [cpf, setCpf] = useState("")
@@ -51,6 +52,7 @@ export function PatientAuthForm({ onBack }: { onBack: () => void }) {
             <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-xl bg-primary mb-3">
               <Pill className="w-6 h-6 text-primary-foreground" />
             </div>
+            
             <CardTitle className="text-2xl text-foreground">
               Entrar como Paciente
             </CardTitle>
@@ -62,13 +64,12 @@ export function PatientAuthForm({ onBack }: { onBack: () => void }) {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="cpf" className="text-foreground">CPF</Label>
-                <Input
-                  id="cpf"
-                  type="text"
-                  placeholder="123.456.789-00"
+                <PatternFormat
+                  format="###.###.###-##"
                   value={cpf}
-                  onChange={(e) => setCpf(e.target.value)}
-                  required
+                  onValueChange={(values) => setCpf(values.value)}
+                  placeholder="000.000.000-00"
+                  className="w-full border rounded-lg px-3 py-2"
                 />
               </div>
 

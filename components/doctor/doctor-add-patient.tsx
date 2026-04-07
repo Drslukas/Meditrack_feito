@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, UserPlus } from "lucide-react"
+import { UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
-import { PatternFormat } from "react-number-format"
+import { PatternFormat } from "react-number-format" 
 
 interface DoctorAddPatientProps {
   onBack: () => void
