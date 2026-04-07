@@ -5,12 +5,7 @@ import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent,TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 // -------------------------
 // TYPES
@@ -170,19 +165,19 @@ export function PatientCalendar() {
           { color: "bg-muted border border-border", label: "Futuro / Sem dados" },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${color}`} />
+            <div className={`w-3.5 h-3.5 rounded-full ${color} shadow-sm`} />
             <span className="text-muted-foreground">{label}</span>
           </div>
         ))}
       </div>
 
-      <Card>
+      <Card className="shadow-sm border">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <Button variant="ghost" size="icon" onClick={prevMonth}>
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <CardTitle className="text-base text-foreground">
+            <CardTitle className="text-lg font-semibold text-center flex-1">
               {MONTHS[currentMonth]} {currentYear}
             </CardTitle>
             <Button variant="ghost" size="icon" onClick={nextMonth}>
@@ -194,7 +189,7 @@ export function PatientCalendar() {
           {/* Weekday headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {WEEKDAYS.map((d) => (
-              <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2">
+              <div key={d} className="text-center text-xs font-semibold text-muted-foreground py-2 uppercase tracking-wide">
                 {d}
               </div>
             ))}
@@ -208,7 +203,7 @@ export function PatientCalendar() {
             </div>
           ) : (
             <TooltipProvider>
-              <div className="grid grid-cols-7 gap-1">
+              <div className="grid grid-cols-7 gap-2">
                 {Array.from({ length: firstDay }).map((_, i) => (
                   <div key={`empty-${i}`} className="aspect-square" />
                 ))}
@@ -228,12 +223,16 @@ export function PatientCalendar() {
                       <TooltipTrigger asChild>
                         <button
                           onClick={() => setSelectedDate(dateStr === selectedDate ? null : dateStr)}
-                          className={`aspect-square flex flex-col items-center justify-center rounded-lg text-sm transition-all ${isSelected ? "ring-2 ring-primary ring-offset-1" : ""
-                            } ${isToday ? "font-bold" : ""}`}
+                          className={`aspect-square flex flex-col items-center justify-center rounded-xl text-sm
+                          border border-border bg-card hover:bg-muted active:scale-95 transition-all cursor-pointer
+
+                          ${isSelected ? "ring-2 ring-primary ring-offset-2 bg-primary/5" : ""}
+                          ${isToday ? "border-primary font-semibold bg-primary/10" : ""}
+                        `}
                         >
-                          <span className="text-foreground">{day}</span>
+                          <span className="text-[15px] font-medium text-foreground">{day}</span>
                           {data && data.total_doses > 0 && (
-                            <div className={`w-2 h-2 rounded-full mt-0.5 ${statusColor}`} />
+                            <div className={`w-2.5 h-2.5 rounded-full mt-1 shadow-sm ${statusColor}`} />
                           )}
                         </button>
                       </TooltipTrigger>
@@ -253,7 +252,7 @@ export function PatientCalendar() {
 
       {/* Selected Day Detail */}
       {selectedDate && (
-        <Card>
+        <Card className="shadow-sm border">
           <CardHeader className="pb-2">
             <CardTitle className="text-base text-foreground">
               Detalhes — {selectedDate.split("-").reverse().join("/")}
@@ -276,9 +275,9 @@ export function PatientCalendar() {
                 </div>
 
                 {/* Progress bar for selected day */}
-                <div className="w-full bg-muted rounded-full h-2">
+                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                   <div
-                    className={`h-2 rounded-full transition-all ${selectedDayData.adherence === 100
+                      className={`h-2 rounded-full transition-all duration-500 ${selectedDayData.adherence === 100
                         ? "bg-success"
                         : selectedDayData.adherence >= 50
                           ? "bg-warning"

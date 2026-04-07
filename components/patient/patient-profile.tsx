@@ -72,7 +72,7 @@ export function PatientProfile({ userId }: { userId: number }) {
         <CardContent className="flex flex-col gap-3">
 
           <div>
-            <strong>CPF:</strong> 
+            <strong>CPF: </strong> 
             <PatternFormat format="###.###.###-##" mask="_" value={patient.cpf} />
           </div>
 
