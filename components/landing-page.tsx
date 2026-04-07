@@ -37,13 +37,14 @@ export function LandingPage() {
       </header>
 
       {/* Hero */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-16">
-        <div className="max-w-2xl text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight text-balance leading-tight">
-            Sua saude sob controle, todos os dias
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-10">
+        <div className="max-w-2xl text-center mb-10 px-4">
+          <h1 className="text-3xl md:text-5xl font-bold text-foreground tracking-tight leading-tight">
+            Sua saúde sob controle, todos os dias
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground text-pretty leading-relaxed max-w-xl mx-auto">
-            Acompanhe seus medicamentos, receba lembretes e mantenha seu medico informado sobre sua adesao ao tratamento.
+
+          <p className="mt-4 text-base md:text-lg text-muted-foreground leading-relaxed max-w-lg mx-auto">
+            Acompanhe seus medicamentos, receba lembretes e mantenha seu médico informado sobre sua adesão ao tratamento.
           </p>
         </div>
 
