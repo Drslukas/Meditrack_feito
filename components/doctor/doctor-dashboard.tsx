@@ -125,7 +125,7 @@ export function DoctorDashboard() {
           </button>
           <button
             onClick={() => { setView("patients"); setSelectedPatient(null) }}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${view === "patients" || view === "patient-detail" || view === "add-patient"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${view === "patients" || view === "patient-detail"
                 ? "bg-sidebar-accent text-sidebar-primary"
                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
               }`}
