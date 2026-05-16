@@ -1,19 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Plus, Trash2, Clock, Pill, FileText, ChevronDown, ChevronUp } from "lucide-react"
+import { Plus, Trash2, Clock, Pill, FileText, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 

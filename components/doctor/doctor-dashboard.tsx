@@ -2,15 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
-import {
-  Users,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  X,
-  UserPlus,
-  FilePlus,
-} from "lucide-react"
+import { Users, LayoutDashboard, LogOut, Menu, X, UserPlus, FilePlus,} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 import { DoctorOverview } from "./doctor-overview"
