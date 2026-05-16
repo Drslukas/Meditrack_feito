@@ -60,12 +60,17 @@ export function DoctorAuthForm({ onBack }: { onBack: () => void }) {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} autoComplete="on" className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="doc-email" className="text-foreground">E-mail profissional</Label>
+                <Label htmlFor="doc-email" className="text-foreground">
+                  E-mail profissional
+                </Label>
+
                 <Input
                   id="doc-email"
+                  name="username"
                   type="email"
+                  autoComplete="username"
                   placeholder="seu@clinica.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -74,7 +79,10 @@ export function DoctorAuthForm({ onBack }: { onBack: () => void }) {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="doc-password" className="text-foreground">Senha</Label>
+                <Label htmlFor="doc-password" className="text-foreground">
+                  Senha
+                </Label>
+
                 <div className="relative">
                   <Input
                     id="doc-password"
