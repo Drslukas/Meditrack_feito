@@ -64,7 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           user: parsedUser,
           token,
         })
-      } catch (err) {
+        
+      } catch {
         localStorage.removeItem("token")
         localStorage.removeItem("user")
       } finally {
@@ -75,12 +76,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     verifyToken()
   }, [])
 
-  const loginAsPatient = useCallback(async (cpf: string, birthDate: string) => {
+  // ✅ COLE ISSO NO LUGAR
+  const login = useCallback(async (endpoint: string, body: object) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login/patient`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cpf, birth_date: birthDate }),
+        body: JSON.stringify(body),
       })
 
       if (!res.ok) return false
@@ -91,49 +93,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("token", data.access_token)
       localStorage.setItem("user", JSON.stringify(user))
 
-      setState({
-        isAuthenticated: true,
-        role: data.role,
-        user,
-        token: data.access_token,
-      })
-
+      setState({ isAuthenticated: true, role: data.role, user, token: data.access_token })
       return true
-    } catch (err) {
-      console.error("Login paciente falhou:", err)
+    } catch {
       return false
     }
   }, [])
 
-  const loginAsDoctor = useCallback(async (email: string, password: string) => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login/doctor`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
+  const loginAsPatient = useCallback((cpf: string, birthDate: string) =>
+    login("/auth/login/patient", { cpf, birth_date: birthDate }), [login])
 
-      if (!res.ok) return false
-
-      const data = await res.json()
-      const user = { user_id: data.user_id, name: data.name, role: data.role }
-
-      localStorage.setItem("token", data.access_token)
-      localStorage.setItem("user", JSON.stringify(user))
-
-      setState({
-        isAuthenticated: true,
-        role: data.role,
-        user,
-        token: data.access_token,
-      })
-
-      return true
-    } catch (err) {
-      console.error("Erro ao logar médico:", err)
-      return false
-    }
-  }, [])
+  const loginAsDoctor = useCallback((email: string, password: string) =>
+    login("/auth/login/doctor", { email, password }), [login])
 
   const logout = useCallback(() => {
     localStorage.removeItem("token")
