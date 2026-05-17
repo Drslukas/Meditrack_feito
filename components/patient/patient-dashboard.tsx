@@ -2,15 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import {
-  Pill,
-  CalendarDays,
-  LayoutDashboard,
-  User,
-  LogOut,
-  Menu,
-  X,
-} from "lucide-react"
+import { Pill, CalendarDays, LayoutDashboard, User, LogOut, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 import { PatientOverview } from "./patient-overview"

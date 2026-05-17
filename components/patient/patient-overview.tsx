@@ -1,30 +1,14 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import {
-  CheckCircle2,
-  Clock,
-  XCircle,
-  TrendingUp,
-  Flame,
-  AlertCircle,
-  Loader2,
-} from "lucide-react"
+import { CheckCircle2, Clock, XCircle, TrendingUp, Flame, AlertCircle, Loader2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 // -------------------------
 // TYPES

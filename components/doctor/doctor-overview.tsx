@@ -1,26 +1,12 @@
 "use client"
 
-import {
-  Users,
-  TrendingUp,
-  AlertTriangle,
-  Award,
-  Eye,
-} from "lucide-react"
+import { Users, TrendingUp, AlertTriangle, Award, Eye } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useAuth } from "@/lib/auth-context"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import type { Patient } from "./doctor-dashboard"
 
 interface DashboardOverview {

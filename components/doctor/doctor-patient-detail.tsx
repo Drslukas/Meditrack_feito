@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import type { Patient } from "./doctor-dashboard"
 
 interface PatientDashboard {
@@ -179,7 +179,11 @@ export function DoctorPatientDetail({ patient, onBack }: DoctorPatientDetailProp
       {dashboard.patient_phone && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Phone className="w-3.5 h-3.5" />
-          <span>{dashboard.patient_phone}</span>
+          <span>
+            {dashboard.patient_phone
+              ? `(${dashboard.patient_phone.slice(0, 2)}) ${dashboard.patient_phone.slice(2)}`
+              : "-"}
+          </span>
         </div>
       )}
 
@@ -256,6 +260,39 @@ export function DoctorPatientDetail({ patient, onBack }: DoctorPatientDetailProp
         <TabsContent value="overview" className="flex flex-col gap-4 mt-4">
           <Card>
             <CardHeader className="pb-2">
+              <CardTitle className="text-base text-foreground">Adesão Semanal</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dashboard.weekly_adherence}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="week" tick={{ fontSize: 10 }} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+                    <RechartsTooltip
+                      formatter={(value: number) => [`${value}%`, "Adesão"]}
+                      contentStyle={{
+                        backgroundColor: "var(--card)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="adherence"
+                      stroke="var(--chart-2)"
+                      strokeWidth={2}
+                      dot={{ fill: "var(--chart-2)", r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
               <CardTitle className="text-base text-foreground">Tendência de Adesão - 30 dias</CardTitle>
             </CardHeader>
             <CardContent>
@@ -281,39 +318,6 @@ export function DoctorPatientDetail({ patient, onBack }: DoctorPatientDetailProp
                       strokeWidth={2}
                       dot={false}
                       activeDot={{ r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base text-foreground">Adesão Semanal</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-40">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dashboard.weekly_adherence}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="week" tick={{ fontSize: 10 }} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
-                    <RechartsTooltip
-                      formatter={(value: number) => [`${value}%`, "Adesão"]}
-                      contentStyle={{
-                        backgroundColor: "var(--card)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="adherence"
-                      stroke="var(--chart-2)"
-                      strokeWidth={2}
-                      dot={{ fill: "var(--chart-2)", r: 4 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
