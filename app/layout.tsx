@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   title: 'MediTrack - Controle de Medicamentos',
   description: 'Plataforma de adesao medicamentosa para pacientes e medicos',
   icons: {
-    icon: '/icon.svg',
-    shortcut: '/icon.svg',
-    apple: '/apple-icon.png',
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
   },
 }
 

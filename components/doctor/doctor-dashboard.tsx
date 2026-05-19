@@ -1,45 +1,104 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
-import {
-  Users,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  X,
-  UserPlus,
-} from "lucide-react"
+import { Users, LayoutDashboard, LogOut, Menu, X, UserPlus, FilePlus,} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
-import { patients as allPatients, type Doctor, type Patient } from "@/lib/mock-data"
 import { DoctorOverview } from "./doctor-overview"
 import { DoctorPatientDetail } from "./doctor-patient-detail"
 import { DoctorPatientsList } from "./doctor-patients-list"
 import { DoctorAddPatient } from "./doctor-add-patient"
+import { DoctorNewPrescription } from "./doctor-new-prescription"
 
-type View = "overview" | "patients" | "patient-detail" | "add-patient"
+type View = "overview" | "patients" | "patient-detail" | "add-patient" | "new-prescription"
+
+export interface Patient {
+  patient_id: number
+  name: string
+  age: number | null
+  active_medications: number
+  adherence: number
+}
+
+export interface PatientSimple {
+  id: number
+  name: string
+  cpf: string
+  birth_date: string
+  phone: string
+}
+
+interface DashboardOverview {
+  total_patients: number
+  general_adherence: number
+  high_adherence_percentage: number
+  low_adherence_percentage: number
+  patients: Patient[]
+}
 
 export function DoctorDashboard() {
-  const { user, logout } = useAuth()
-  const doctor = user as Doctor
+  const { user, token, logout, loading: authLoading } = useAuth()
   const [view, setView] = useState<View>("overview")
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [overview, setOverview] = useState<DashboardOverview | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [allPatients, setAllPatients] = useState<PatientSimple[]>([])
 
-  const doctorPatients = allPatients.filter((p) =>
-    doctor.patients.includes(p.id)
-  )
+  const fetchOverview = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/dashboard/overview/${user?.user_id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      const data = await res.json()
+      setOverview(data)
+    } catch (err) {
+      console.error("Erro ao buscar overview:", err)
+    } finally {
+      setLoading(false)
+    }
+  }, [user, token])
+
+  const fetchAllPatients = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/patients/doctor/${user?.user_id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      const data = await res.json()
+      setAllPatients(data)
+    } catch (err) {
+      console.error("Erro ao buscar pacientes:", err)
+    }
+  }, [user, token])
+
+  useEffect(() => {
+    if (!authLoading && user?.user_id && token) {
+      setLoading(true)
+      fetchOverview()
+      fetchAllPatients()
+    }
+  }, [authLoading, user, token, fetchOverview, fetchAllPatients])
 
   function openPatient(patient: Patient) {
     setSelectedPatient(patient)
     setView("patient-detail")
   }
 
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-sidebar-border">
+      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 flex-col bg-sidebar border-r border-sidebar-border">
         <div className="flex items-center gap-2 px-6 py-5 border-b border-sidebar-border">
           <Image src="/logo.png" alt="MediTrack" width={32} height={32} className="rounded-lg" />
           <span className="text-lg font-semibold text-sidebar-foreground tracking-tight">MediTrack</span>
@@ -48,47 +107,54 @@ export function DoctorDashboard() {
         <nav className="flex-1 flex flex-col gap-1 px-3 py-4">
           <button
             onClick={() => { setView("overview"); setSelectedPatient(null) }}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              view === "overview"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${view === "overview"
                 ? "bg-sidebar-accent text-sidebar-primary"
                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-            }`}
+              }`}
           >
             <LayoutDashboard className="w-4 h-4" />
             Painel
           </button>
           <button
             onClick={() => { setView("patients"); setSelectedPatient(null) }}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              view === "patients" || view === "patient-detail" || view === "add-patient"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${view === "patients" || view === "patient-detail"
                 ? "bg-sidebar-accent text-sidebar-primary"
                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-            }`}
+              }`}
           >
             <Users className="w-4 h-4" />
             Pacientes
           </button>
           <button
             onClick={() => { setView("add-patient"); setSelectedPatient(null) }}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              view === "add-patient"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${view === "add-patient"
                 ? "bg-sidebar-accent text-sidebar-primary"
                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-            }`}
+              }`}
           >
             <UserPlus className="w-4 h-4" />
             Cadastrar Paciente
+          </button>
+          <button
+            onClick={() => { setView("new-prescription"); setSelectedPatient(null) }}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${view === "new-prescription"
+                ? "bg-sidebar-accent text-sidebar-primary"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+              }`}
+          >
+            <FilePlus className="w-4 h-4" />
+            Nova Prescrição
           </button>
         </nav>
 
         <div className="px-3 py-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3 px-3 mb-3">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-sidebar-accent text-sidebar-foreground text-sm font-medium">
-              {doctor.name.replace("Dr. ", "").charAt(0)}
+              {user?.name.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">{doctor.name}</p>
-              <p className="text-xs text-sidebar-foreground/50">{doctor.crm}</p>
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.name}</p>
+              <p className="text-xs text-sidebar-foreground/50">Médico</p>
             </div>
           </div>
           <Button
@@ -141,6 +207,13 @@ export function DoctorDashboard() {
               <UserPlus className="w-4 h-4" />
               Cadastrar Paciente
             </button>
+            <button
+              onClick={() => { setView("new-prescription"); setSelectedPatient(null); setMobileMenuOpen(false) }}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted"
+            >
+              <FilePlus className="w-4 h-4" />
+              Nova Prescrição
+            </button>
             <Button
               variant="ghost"
               className="justify-start gap-2 text-muted-foreground mt-2"
@@ -154,18 +227,17 @@ export function DoctorDashboard() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 md:overflow-y-auto pt-16 md:pt-0">
+      <main className="flex-1 md:overflow-y-auto pt-16 md:pt-0 md:ml-64">
         <div className="p-6 md:p-8 max-w-6xl mx-auto">
-          {view === "overview" && (
+          {view === "overview" && overview && (
             <DoctorOverview
-              doctor={doctor}
-              patients={doctorPatients}
+              overview={overview}
               onSelectPatient={openPatient}
             />
           )}
-          {view === "patients" && (
+          {view === "patients" && overview && (
             <DoctorPatientsList
-              patients={doctorPatients}
+              patients={overview.patients}
               onSelectPatient={openPatient}
             />
           )}
@@ -177,9 +249,22 @@ export function DoctorDashboard() {
           )}
           {view === "add-patient" && (
             <DoctorAddPatient
-              doctor={doctor}
               onBack={() => setView("patients")}
-              onPatientAdded={() => setView("patients")}
+              onPatientAdded={() => {
+                fetchAllPatients()
+                setView("patients")
+              }}
+            />
+          )}
+          {view === "new-prescription" && (
+            <DoctorNewPrescription
+              patients={allPatients}
+              onBack={() => setView("overview")}
+              onPrescriptionCreated={() => {
+                fetchOverview()
+                fetchAllPatients()
+                setView("patients")
+              }}
             />
           )}
         </div>
